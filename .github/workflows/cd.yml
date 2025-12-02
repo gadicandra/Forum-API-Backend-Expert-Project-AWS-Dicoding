@@ -21,12 +21,12 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: List Railway Services
+      - name: Check Railway Project Info
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo "Listing available Railway services..."
-          railway service list || echo "Failed to list services"
+          echo "Checking Railway project and services..."
+          railway status || echo "Unable to get status"
 
       - name: Deploy to Railway
         env:
@@ -36,8 +36,15 @@ jobs:
             echo "Deploying to service: ${{ secrets.RAILWAY_SERVICE }}"
             railway up --service=${{ secrets.RAILWAY_SERVICE }} --detach
           else
-            echo "RAILWAY_SERVICE secret not set. Please check the service list above and add it to GitHub secrets."
-            echo "Run: railway service list to see available services"
-            railway service list
-            exit 1
+            echo "⚠️  RAILWAY_SERVICE secret not set!"
+            echo "Attempting to deploy without service flag to see available services..."
+            railway up --detach || {
+              echo ""
+              echo "❌ Deployment failed. Multiple services detected."
+              echo "Please add RAILWAY_SERVICE secret to GitHub repository:"
+              echo "1. Go to Settings → Secrets and variables → Actions"
+              echo "2. Add new secret: RAILWAY_SERVICE"
+              echo "3. Set value to your backend service name (e.g., 'forum-api', 'backend', 'api')"
+              exit 1
+            }
           fi
