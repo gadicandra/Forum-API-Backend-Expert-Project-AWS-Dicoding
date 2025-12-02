@@ -8,35 +8,13 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    container: ghcr.io/railwayapp/cli:latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      SERVICE_NAME: zonal-beauty
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24.x'
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Check Railway Project Info
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          echo "Checking Railway authentication..."
-          railway whoami || echo "Unable to authenticate"
-          echo ""
-          echo "To find your service name:"
-          echo "1. Visit https://railway.app/dashboard"
-          echo "2. Select your project"
-          echo "3. Look for service names (e.g., 'forum-api', 'backend', 'api')"
-
       - name: Deploy to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          SERVICE_NAME: ${{ secrets.RAILWAY_SERVICE || 'zonal-beauty' }}
-        run: |
-          echo "✅ Deploying to service: $SERVICE_NAME"
-          railway up --service=$SERVICE_NAME --detach
+        run: railway up --service=${{ env.SERVICE_NAME }} --detach
