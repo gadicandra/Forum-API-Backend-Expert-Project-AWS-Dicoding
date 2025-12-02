@@ -21,7 +21,23 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
+      - name: List Railway Services
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "Listing available Railway services..."
+          railway service list || echo "Failed to list services"
+
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --detach
+        run: |
+          if [ -n "${{ secrets.RAILWAY_SERVICE }}" ]; then
+            echo "Deploying to service: ${{ secrets.RAILWAY_SERVICE }}"
+            railway up --service=${{ secrets.RAILWAY_SERVICE }} --detach
+          else
+            echo "RAILWAY_SERVICE secret not set. Please check the service list above and add it to GitHub secrets."
+            echo "Run: railway service list to see available services"
+            railway service list
+            exit 1
+          fi
