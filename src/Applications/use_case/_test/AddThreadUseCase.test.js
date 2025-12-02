@@ -13,7 +13,7 @@ describe('AddThreadUseCase', () => {
 
     const mockAddedThread = new AddedThread({
       id: 'thread-h5k2',
-      title: 'Menggagalkan CI',
+      title: 'sebuah thread',
       owner: 'user-p9m7',
     });
 
