@@ -25,26 +25,41 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo "Checking Railway project and services..."
-          railway status || echo "Unable to get status"
+          echo "Checking Railway authentication..."
+          railway whoami || echo "Unable to authenticate"
+          echo ""
+          echo "To find your service name:"
+          echo "1. Visit https://railway.app/dashboard"
+          echo "2. Select your project"
+          echo "3. Look for service names (e.g., 'forum-api', 'backend', 'api')"
 
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           if [ -n "${{ secrets.RAILWAY_SERVICE }}" ]; then
-            echo "Deploying to service: ${{ secrets.RAILWAY_SERVICE }}"
+            echo "✅ Deploying to service: ${{ secrets.RAILWAY_SERVICE }}"
             railway up --service=${{ secrets.RAILWAY_SERVICE }} --detach
           else
-            echo "⚠️  RAILWAY_SERVICE secret not set!"
-            echo "Attempting to deploy without service flag to see available services..."
-            railway up --detach || {
-              echo ""
-              echo "❌ Deployment failed. Multiple services detected."
-              echo "Please add RAILWAY_SERVICE secret to GitHub repository:"
-              echo "1. Go to Settings → Secrets and variables → Actions"
-              echo "2. Add new secret: RAILWAY_SERVICE"
-              echo "3. Set value to your backend service name (e.g., 'forum-api', 'backend', 'api')"
-              exit 1
-            }
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "⚠️  ERROR: RAILWAY_SERVICE secret is not configured"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "📋 How to find your service name:"
+            echo "   1. Go to https://railway.app/dashboard"
+            echo "   2. Select your project: 'Forum-API-Backend-Expert-Project-AWS-Dicoding'"
+            echo "   3. You will see your services listed (ignore 'Postgres' if present)"
+            echo "   4. Copy the service name for your Node.js backend"
+            echo ""
+            echo "🔧 How to add the secret:"
+            echo "   1. Go to: https://github.com/${{ github.repository }}/settings/secrets/actions"
+            echo "   2. Click 'New repository secret'"
+            echo "   3. Name: RAILWAY_SERVICE"
+            echo "   4. Value: <your-service-name>"
+            echo "   5. Click 'Add secret'"
+            echo ""
+            echo "💡 Common service names: 'forum-api', 'backend', 'api', 'web'"
+            echo ""
+            exit 1
           fi
