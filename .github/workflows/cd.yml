@@ -11,7 +11,7 @@ jobs:
     container: ghcr.io/railwayapp/cli:latest
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      SERVICE_NAME: zonal-beauty
+      SERVICE_NAME: Forum-API
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
