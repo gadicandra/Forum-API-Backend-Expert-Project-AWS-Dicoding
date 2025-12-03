@@ -8,8 +8,8 @@ WORKDIR /app
 # Copy dependency files
 COPY package*.json ./
 
-# Install Node.js dependencies
-RUN pnpm install
+# Install Node.js dependencies using pnpm
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
 # Copy source code & configuration files
 COPY . .
