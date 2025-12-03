@@ -2,6 +2,7 @@ const GetThreadDetailUseCase = require('../GetThreadDetailUseCase');
 const ThreadsRepository = require('../../../Domains/threads/ThreadsRepository');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
+const CommentLikeRepository = require('../../../Domains/comments/CommentLikeRepository');
 const ThreadDetail = require('../../../Domains/threads/entities/ThreadDetail');
 const CommentDetail = require('../../../Domains/comments/entities/CommentDetail');
 
@@ -40,6 +41,7 @@ describe('GetThreadDetailUseCase', () => {
     const mockThreadRepository = new ThreadsRepository();
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
+    const mockCommentLikeRepository = new CommentLikeRepository();
 
     mockThreadRepository.verifyThreadAvailability = jest.fn()
       .mockImplementation(() => Promise.resolve());
@@ -49,11 +51,14 @@ describe('GetThreadDetailUseCase', () => {
       .mockImplementation(() => Promise.resolve(expectedComments));
     mockReplyRepository.getRepliesByCommentId = jest.fn()
       .mockImplementation(() => Promise.resolve([]));
+    mockCommentLikeRepository.getLikeCountByCommentId = jest.fn()
+      .mockImplementation(() => Promise.resolve(0));
 
     const getThreadDetailUseCase = new GetThreadDetailUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
+      commentLikeRepository: mockCommentLikeRepository,
     });
 
     // Action
@@ -66,11 +71,21 @@ describe('GetThreadDetailUseCase', () => {
       body: expectedThread.body,
       date: expectedThread.date,
       username: expectedThread.username,
-      comments: expectedComments,
+      comments: [
+        {
+          ...expectedComments[0],
+          likeCount: 0,
+        },
+        {
+          ...expectedComments[1],
+          likeCount: 0,
+        },
+      ],
     });
     expect(mockThreadRepository.verifyThreadAvailability).toBeCalledWith(useCasePayload);
     expect(mockThreadRepository.getThreadById).toBeCalledWith(useCasePayload);
     expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith(useCasePayload);
+    expect(mockCommentLikeRepository.getLikeCountByCommentId).toHaveBeenCalledTimes(2);
   });
 
   it('should throw error when thread not found', async () => {
@@ -80,6 +95,7 @@ describe('GetThreadDetailUseCase', () => {
     const mockThreadRepository = new ThreadsRepository();
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
+    const mockCommentLikeRepository = new CommentLikeRepository();
 
     mockThreadRepository.verifyThreadAvailability = jest.fn()
       .mockImplementation(() => Promise.reject(new Error('thread tidak ditemukan')));
@@ -88,6 +104,7 @@ describe('GetThreadDetailUseCase', () => {
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
+      commentLikeRepository: mockCommentLikeRepository,
     });
 
     // Action & Assert

@@ -4,7 +4,7 @@ class CommentDetail {
     this._validateDetailData(payload);
 
     const {
-      id, username, date, content, isDelete, replies,
+      id, username, date, content, isDelete, replies, likeCount,
     } = payload;
 
     this.id = id;
@@ -12,6 +12,7 @@ class CommentDetail {
     this.date = date;
     this.content = this._getContentBasedOnDeletionStatus(content, isDelete);
     this.replies = replies || [];
+    this.likeCount = likeCount || 0;
   }
 
   _normalizeDateField(payload) {

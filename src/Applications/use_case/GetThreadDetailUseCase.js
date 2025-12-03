@@ -1,8 +1,9 @@
 class GetThreadDetailUseCase {
-  constructor({ threadRepository, commentRepository, replyRepository }) {
+  constructor({ threadRepository, commentRepository, replyRepository, commentLikeRepository }) {
     this._threadDataStore = threadRepository;
     this._commentDataStore = commentRepository;
     this._replyDataStore = replyRepository;
+    this._commentLikeDataStore = commentLikeRepository;
   }
 
   async execute(threadIdentifier) {
@@ -23,6 +24,7 @@ class GetThreadDetailUseCase {
     return Promise.all(
       commentsList.map(async (commentItem) => {
         const repliesList = await this._replyDataStore.getRepliesByCommentId(commentItem.id);
+        const likeCount = await this._commentLikeDataStore.getLikeCountByCommentId(commentItem.id);
 
         return {
           id: commentItem.id,
@@ -30,6 +32,7 @@ class GetThreadDetailUseCase {
           date: commentItem.date,
           content: commentItem.content,
           replies: repliesList,
+          likeCount,
         };
       }),
     );

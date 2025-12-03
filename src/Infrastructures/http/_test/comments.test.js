@@ -1,6 +1,7 @@
 const pool = require('../../database/postgres/pool');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
+const CommentLikesTableTestHelper = require('../../../../tests/CommentLikesTableTestHelper');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const ServerTestHelper = require('../../../../tests/ServerTestHelper');
 const container = require('../../container');
@@ -12,6 +13,7 @@ describe('/threads/{threadId}/comments endpoint', () => {
   });
 
   afterEach(async () => {
+    await CommentLikesTableTestHelper.cleanTable();
     await CommentsTableTestHelper.cleanTable();
     await ThreadsTableTestHelper.cleanTable();
     await UsersTableTestHelper.cleanTable();
@@ -271,6 +273,140 @@ describe('/threads/{threadId}/comments endpoint', () => {
       const response = await server.inject({
         method: 'DELETE',
         url: '/threads/thread-999/comments/comment-w3n8',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toBeDefined();
+    });
+  });
+
+  describe('when PUT /threads/{threadId}/comments/{commentId}/likes', () => {
+    it('should response 200 and like comment successfully', async () => {
+      // Arrange
+      const server = await createServer(container);
+      const { accessToken, userId } = await ServerTestHelper.getAccessTokenAndUserId();
+
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-h5k2',
+        owner: userId,
+      });
+
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-w3n8',
+        threadId: 'thread-h5k2',
+        owner: userId,
+      });
+
+      // Action
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/threads/thread-h5k2/comments/comment-w3n8/likes',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+    });
+
+    it('should response 200 and unlike comment when already liked', async () => {
+      // Arrange
+      const server = await createServer(container);
+      const { accessToken, userId } = await ServerTestHelper.getAccessTokenAndUserId();
+
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-h5k2',
+        owner: userId,
+      });
+
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-w3n8',
+        threadId: 'thread-h5k2',
+        owner: userId,
+      });
+
+      // Like first time
+      await server.inject({
+        method: 'PUT',
+        url: '/threads/thread-h5k2/comments/comment-w3n8/likes',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Unlike (second time)
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/threads/thread-h5k2/comments/comment-w3n8/likes',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+    });
+
+    it('should response 401 when request without authentication', async () => {
+      // Arrange
+      const server = await createServer(container);
+
+      // Action
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/threads/thread-h5k2/comments/comment-w3n8/likes',
+      });
+
+      // Assert
+      expect(response.statusCode).toEqual(401);
+    });
+
+    it('should response 404 when thread not found', async () => {
+      // Arrange
+      const server = await createServer(container);
+      const { accessToken } = await ServerTestHelper.getAccessTokenAndUserId();
+
+      // Action
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/threads/thread-999/comments/comment-w3n8/likes',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toBeDefined();
+    });
+
+    it('should response 404 when comment not found', async () => {
+      // Arrange
+      const server = await createServer(container);
+      const { accessToken, userId } = await ServerTestHelper.getAccessTokenAndUserId();
+
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-h5k2',
+        owner: userId,
+      });
+
+      // Action
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/threads/thread-h5k2/comments/comment-999/likes',
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

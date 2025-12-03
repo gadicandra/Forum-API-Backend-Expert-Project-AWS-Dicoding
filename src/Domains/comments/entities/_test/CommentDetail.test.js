@@ -45,6 +45,7 @@ describe('CommentDetail entities', () => {
     expect(commentDetail.date).toEqual(payload.date);
     expect(commentDetail.content).toEqual(payload.content);
     expect(commentDetail.replies).toEqual([]);
+    expect(commentDetail.likeCount).toEqual(0);
   });
 
   it('should create CommentDetail with deleted content correctly', () => {
@@ -94,5 +95,26 @@ describe('CommentDetail entities', () => {
     expect(commentDetail.date).toEqual(payload.date);
     expect(commentDetail.content).toEqual(payload.content);
     expect(commentDetail.replies).toEqual(payload.replies);
+  });
+
+  it('should create CommentDetail with likeCount correctly', () => {
+    // Arrange
+    const payload = {
+      id: 'comment-w3n8',
+      username: 'user123',
+      date: '2024-01-01T00:00:00.000Z',
+      content: 'Test Content',
+      likeCount: 5,
+    };
+
+    // Action
+    const commentDetail = new CommentDetail(payload);
+
+    // Assert
+    expect(commentDetail.id).toEqual(payload.id);
+    expect(commentDetail.username).toEqual(payload.username);
+    expect(commentDetail.date).toEqual(payload.date);
+    expect(commentDetail.content).toEqual(payload.content);
+    expect(commentDetail.likeCount).toEqual(5);
   });
 });
