@@ -1,24 +1,18 @@
 FROM node:18-slim
 
-# Install Nginx & Gettext (for envsubst command)
+# Update repo dan install Nginx + gettext (untuk envsubst)
 RUN apt-get update && apt-get install -y nginx gettext-base && rm -rf /var/lib/apt/lists/*
 
+# Buat folder kerja
 WORKDIR /app
 
-# Copy dependency files
+# Copy dependency dan install
 COPY package*.json ./
+RUN npm install -g pnpm && pnpm install --production
 
-# Install Node.js dependencies using pnpm
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
-
-# Copy source code & configuration files
+# Copy source code aplikasi dan config nginx
 COPY . .
 
-# Give execute permission to start.sh
-RUN chmod +x start.sh
+# Jalankan aplikasi dengan Nginx
+CMD /bin/bash -c "npm run start & sleep 5 && envsubst '\$PORT' < nginx.conf > /etc/nginx/nginx.conf && nginx -g 'daemon off;' -c /etc/nginx/nginx.conf"
 
-# Expose port (Railway will override this)
-EXPOSE 8080
-
-# Run the startup script
-CMD ["./start.sh"]
