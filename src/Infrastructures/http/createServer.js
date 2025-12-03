@@ -10,8 +10,10 @@ const replies = require('../../Interfaces/http/api/replies');
 
 const createServer = async (container) => {
   const server = Hapi.server({
-    host: process.env.HOST,
-    port: process.env.PORT,
+    // Use fixed port 5000 for internal communication
+    // Nginx will handle the public port from $PORT
+    port: 5000,
+    host: 'localhost',
   });
 
   await server.register([
