@@ -10,8 +10,10 @@ const replies = require('../../Interfaces/http/api/replies');
 
 const createServer = async (container) => {
   const server = Hapi.server({
-    port: process.env.PORT,
-    host: process.env.HOST,
+    // IMPORTANT: Port 5000 untuk internal (Nginx forward ke sini)
+    // Nginx yang akan listen di process.env.PORT dari Railway
+    port: 5000,
+    host: 'localhost',
   });
 
   await server.register([
